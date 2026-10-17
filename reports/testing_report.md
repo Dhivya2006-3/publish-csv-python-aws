@@ -1,28 +1,42 @@
 # CSV Validation Testing Report
 
 ## Project
-**Publish CSV Python AWS**
+Publish CSV File Using Python and Deploy in AWS
 
 ## Objective
-To verify that the CSV validation utility correctly identifies valid, empty, and missing CSV files.
+To validate CSV file structure, column headers, row consistency, missing values, and file size.
 
-## Test Cases
+## Validation Features
+
+- File existence check
+- Empty file detection
+- Maximum file size limit of 10 MB
+- Empty header detection
+- Duplicate column name detection
+- Missing value detection
+- Inconsistent column count detection
+- CSV parsing error handling
+
+## Automated Test Cases
 
 | Test Case | Expected Result | Status |
 |---|---|---|
-| Valid CSV file | Returns `True` | Pending execution |
-| Empty CSV file | Returns `False` | Pending execution |
-| Missing CSV file | Returns `False` | Pending execution |
+| Valid CSV | Accepted | Pending execution |
+| Empty file | Rejected | Pending execution |
+| Missing file | Rejected | Pending execution |
+| Duplicate headers | Rejected | Pending execution |
+| Empty header | Rejected | Pending execution |
+| Missing value | Rejected | Pending execution |
+| Inconsistent columns | Rejected | Pending execution |
 
-## Testing Method
-Tests are implemented using Python's built-in `unittest` framework.
+## Test Framework
+Python `unittest`
 
-## Execution
-Run the following command from the project root:
+## Execution Command
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
 ## Conclusion
-The test cases are prepared. Final results will be recorded after running the tests locally.
+Advanced CSV validation and automated test cases have been added to the project. Final test results must be recorded after running the tests locally.
