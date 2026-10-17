@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Analytics Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header>
+        <h1>CSV Analytics Dashboard</h1>
+        <p>Generate, upload, clean and download your CSV data</p>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Generate CSV</h2>
+            <label for="count">Number of rows:</label>
+            <input id="count" type="number" min="1" max="1000" value="10">
+            <button onclick="generateCSV()">Generate Data</button>
+        </section>
+
+        <section class="card">
+            <h2>Upload CSV</h2>
+            <input id="csvFile" type="file" accept=".csv">
+            <button onclick="uploadCSV()">Upload File</button>
+        </section>
+
+        <section class="card">
+            <h2>Clean Data</h2>
+            <button onclick="cleanData('missing')">Clean Missing Values</button>
+            <button onclick="cleanData('duplicates')">Remove Duplicates</button>
+            <button onclick="loadData()">Refresh Data</button>
+            <a href="/api/download"><button>Download CSV</button></a>
+            <p id="message">Ready.</p>
+        </section>
+
+        <section class="card">
+            <h2>CSV Data Preview</h2>
+            <div class="table-wrap">
+                <table id="dataTable">
+                    <tbody>
+                        <tr><td>Click Refresh Data to load the CSV.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const message = document.getElementById("message");
+
+        async function generateCSV() {
+            const count = Number(document.getElementById("count").value);
+            try {
+                const response = await fetch("/api/generate", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({count: count})
+                });
+                const result = await response.json();
+                message.textContent = result.message || result.error || JSON.stringify(result);
+                if (response.ok) await loadData();
+            } catch (error) {
+                message.textContent = "Server connection failed. Please run Flask.";
+            }
+        }
+
+        async function uploadCSV() {
+            const file = document.getElementById("csvFile").files[0];
+
+            if (!file) {
+                message.textContent = "Please select a CSV file.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await response.json();
+                message.textContent = result.message || result.error || JSON.stringify(result);
+                if (response.ok) await loadData();
+            } catch (error) {
+                message.textContent = "Upload failed. Check the Flask server.";
+            }
+        }
+
+        async function cleanData(action) {
+            try {
+                const response = await fetch("/api/clean/" + action, {
+                    method: "POST"
+                });
+                const result = await response.json();
+                message.textContent = result.message || result.error || JSON.stringify(result);
+                if (response.ok) await loadData();
+            } catch (error) {
+                message.textContent = "Server connection failed.";
+            }
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch("/api/data");
+                const result = await response.json();
+
+                if (!response.ok) {
+                    message.textContent = result.error || "Unable to load data.";
+                    return;
+                }
+
+                const rows = Array.isArray(result)
+                    ? result
+                    : (result.data || result.rows || []);
+
+                const table = document.getElementById("dataTable");
+                table.replaceChildren();
+
+                if (!rows.length) {
+                    const tbody = document.createElement("tbody");
+                    const tr = document.createElement("tr");
+                    const td = document.createElement("td");
+                    td.textContent = "No data available.";
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                    table.appendChild(tbody);
+                    return;
+                }
+
+                const columns = Object.keys(rows[0]);
+                const thead = document.createElement("thead");
+                const headerRow = document.createElement("tr");
+
+                columns.forEach(column => {
+                    const th = document.createElement("th");
+                    th.textContent = column;
+                    headerRow.appendChild(th);
+                });
+
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                const tbody = document.createElement("tbody");
+
+                rows.forEach(row => {
+                    const tr = document.createElement("tr");
+
+                    columns.forEach(column => {
+                        const td = document.createElement("td");
+                        td.textContent = row[column] ?? "";
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                });
+
+                table.appendChild(tbody);
+                message.textContent = "Data loaded successfully.";
+            } catch (error) {
+                message.textContent = "Could not load data. Check the Flask server.";
+            }
+        }
+    </script>
+
+</body>
+</html>
