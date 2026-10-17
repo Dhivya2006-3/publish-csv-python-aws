@@ -1,38 +1,28 @@
+# CSV Validation Testing Report
 
-import csv
-import tempfile
-import unittest
-from pathlib import Path
+## Project
+**Publish CSV Python AWS**
 
+## Objective
+To verify that the CSV validation utility correctly identifies valid, empty, and missing CSV files.
 
-def validate_csv(file_path):
-    path = Path(file_path)
+## Test Cases
 
-    if not path.exists() or path.stat().st_size == 0:
-        return False
+| Test Case | Expected Result | Status |
+|---|---|---|
+| Valid CSV file | Returns `True` | Pending execution |
+| Empty CSV file | Returns `False` | Pending execution |
+| Missing CSV file | Returns `False` | Pending execution |
 
-    try:
-        with path.open("r", newline="", encoding="utf-8-sig") as file:
-            reader = csv.reader(file)
-            header = next(reader, None)
-            return bool(header) and any(header)
-    except (OSError, UnicodeError, csv.Error):
-        return False
+## Testing Method
+Tests are implemented using Python's built-in `unittest` framework.
 
+## Execution
+Run the following command from the project root:
 
-class TestCSVValidation(unittest.TestCase):
-    def test_valid_csv(self):
-        with tempfile.TemporaryDirectory() as folder:
-            path = Path(folder) / "test.csv"
-            path.write_text("ID,Name\n1,Sample\n", encoding="utf-8")
-            self.assertTrue(validate_csv(path))
+```bash
+python -m unittest discover -s tests -v
+```
 
-    def test_empty_csv(self):
-        with tempfile.TemporaryDirectory() as folder:
-            path = Path(folder) / "empty.csv"
-            path.write_text("", encoding="utf-8")
-            self.assertFalse(validate_csv(path))
-
-
-if __name__ == "__main__":
-    unittest.main()
+## Conclusion
+The test cases are prepared. Final results will be recorded after running the tests locally.
